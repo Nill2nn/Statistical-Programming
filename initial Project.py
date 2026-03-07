@@ -31,3 +31,14 @@ print(missing_df)
 # I will keep and impute price column, because pricing information is crucial for our analysis and dropping it would lead to a significant loss of valuable insights. Instead, I will impute the missing values in the price column using the median price of the listings, which is a common approach for handling missing numerical data.
 # I will drop the 'host_response_rate' column because it has a high percentage of missing values and may not be essential for our analysis. The 'host_response_rate' won't actually play a significant role in decision-making of customers.
 # I will keep the missing values in the 'review_scores' for rating and cleanliness columns, as they may still provide valuable insights for customers about the situation of the Airbnbs. we could not impute these values because they are ratings and imputing them with mean or median could lead to misleading information.
+
+#cleaning the price column by removing the $ sign and converting it to numeric
+def clean_price(price_str):
+    if pd.isna(price_str):
+        return None
+    if isinstance(price_str, str):
+        return float(price_str.replace('$', '').replace(',', ''))
+    return float(price_str)
+
+listings_berlin['price'] = listings_berlin['price'].apply(clean_price)
+print(listings_berlin['price'].describe())  # with .describe methode we can check minimum, median(50%), mean, and maximum
