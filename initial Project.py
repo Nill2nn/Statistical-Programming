@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+#task 1:
 # Load the dataset
 # I just uploaded the csv file to the GitHub repository and read it from there, so you too can access it without any issues.
 url_listing_berlin = "https://raw.githubusercontent.com/Nill2nn/Statistical-Programming/refs/heads/Nill2nn-patch-excel/listings_berlin.csv"
@@ -26,12 +26,15 @@ missing_df = pd.DataFrame({
 })
 
 print(missing_df)
+
 #task 2:
 # the three value with the highest percentage of missing values are: 'price', 'host_response_rate' and 'review_scores' for rating and cleanliness.
 # I will keep and impute price column, because pricing information is crucial for our analysis and dropping it would lead to a significant loss of valuable insights. Instead, I will impute the missing values in the price column using the median price of the listings, which is a common approach for handling missing numerical data.
 # I will drop the 'host_response_rate' column because it has a high percentage of missing values and may not be essential for our analysis. The 'host_response_rate' won't actually play a significant role in decision-making of customers.
 # I will keep the missing values in the 'review_scores' for rating and cleanliness columns, as they may still provide valuable insights for customers . we could not impute these values because they are random and imputing them with mean or median could lead to misleading information.
 
+
+#Task 3:
 #cleaning the price column by removing the $ sign and converting it to numeric
 def clean_price(price_str):
     if pd.isna(price_str):
@@ -43,3 +46,42 @@ def clean_price(price_str):
 listings_berlin['price'] = listings_berlin['price'].apply(clean_price)
 print(listings_berlin['price'].describe())  # with .describe methode we can check minimum, median(50%), mean, and maximum
 
+#Task 5:
+#Truning T/F into boolean values
+listings_berlin['host_is_superhost'] = listings_berlin['host_is_superhost'] == 't'
+listings_berlin['instant_bookable'] = listings_berlin['instant_bookable'] == 't'
+
+print(listings_berlin['host_is_superhost'].dtype)
+print(listings_berlin['instant_bookable'].dtype)
+print(listings_berlin['host_is_superhost'].unique())
+
+#The number of years the host join Airbnb
+lb = listings_berlin.copy()
+lb['host_tenure_years'] = 2025 - pd.to_datetime(lb['host_since']).dt.year
+print(lb['host_tenure_years'].head(5))
+
+#Task 6:
+#comparing the distribution of raw price and log-transformed price
+
+plt.figure(figsize=(14, 6))
+
+# Raw price distribution
+plt.subplot(1, 2, 1)
+plt.hist(listings_berlin['price'], bins=50, color='purple', edgecolor='black')
+plt.title('Raw Price Distribution', fontsize=14, fontweight='bold')
+plt.xlabel('Price', fontsize=12)
+plt.ylabel('Frequency', fontsize=12)
+plt.grid(axis='y', alpha=0.75)
+
+# Log-transformed price distribution
+plt.subplot(1, 2, 2)
+plt.hist(np.log(listings_berlin['price']), bins=50, color='purple', edgecolor='black')
+plt.title('Log-Transformed Price Distribution', fontsize=14, fontweight='bold')
+plt.xlabel('Log-Transformed Price', fontsize=12)
+plt.ylabel('Frequency', fontsize=12)
+plt.grid(axis='y', alpha=0.75)
+
+plt.tight_layout()
+plt.show()
+
+# explanation: The raw price is skewed due to outliers, making it hard to analyze and showing undesirable statistical properties. Log transformation fixes this by creating a bell curve, which is much more suitable for statistical analysis. With a normal distribution, our data is ready to be analyzed.
