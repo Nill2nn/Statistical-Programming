@@ -46,6 +46,9 @@ def clean_price(price_str):
 listings_berlin['price'] = listings_berlin['price'].apply(clean_price)
 print(listings_berlin['price'].describe())  # with .describe methode we can check minimum, median(50%), mean, and maximum
 
+#task 4:
+
+
 #Task 5:
 #Truning T/F into boolean values
 listings_berlin['host_is_superhost'] = listings_berlin['host_is_superhost'] == 't'
@@ -85,3 +88,18 @@ plt.tight_layout()
 plt.show()
 
 # explanation: The raw price is skewed due to outliers, making it hard to analyze and showing undesirable statistical properties. Log transformation fixes this by creating a bell curve, which is much more suitable for statistical analysis. With a normal distribution, our data is ready to be analyzed.
+
+#task 7:
+# sorting the neighborhoods_cleansed column by  median price in descending order
+neighborhood_summary = (listings_berlin.groupby('neighbourhood_cleansed').agg(
+    count=('neighbourhood_cleansed', 'count'),
+    median_price=('price', 'median'),
+    mean_rating=('review_scores_rating', 'mean')
+).round(2).sort_values('median_price', ascending=False))
+
+print(neighborhood_summary.head(3))
+# The top three neighborhoods with the highest median price are:
+# 1. Haselhorst with a median price of 236.5 and average rating of 4.86
+# 2. West 5 with a median price of 203 and average rating of 4.79
+# 3. Schmargendorf  with a median price of 172 and average rating of 4.66
+
