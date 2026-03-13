@@ -124,6 +124,29 @@ print(neighborhood_summary.head(3))
  2. West 5 with a median price of 203 and average rating of 4.79
  3. Schmargendorf  with a median price of 172 and average rating of 4.66 """
 
+# Task 8:
+# calculating the trimmed mean of the price column by removing the top and bottom 5% of the data.
+def trimmed_mean(x, pct):
+    x = sorted(x)
+    n = int(len(x) * (pct / 100))
+    for i in range(n):
+        del x[0]
+        del x[-1]
+    return sum(x) / len(x)
+
+cleaned_prices = listings_berlin['price'].dropna().to_numpy()
+trim_m = trimmed_mean(cleaned_prices, 5)
+arith_m = cleaned_prices.mean()
+compare = trim_m / arith_m
+
+print(f'Trimmed mean: {trim_m}')
+print(f'Arithmetic mean: {arith_m}')
+print(f'Comparison: {compare}')
+
+""" We define a function trimmed_mean with 2 parameters: x - list of numbers, pct - percentage
+    We sort the list x and calculate n - number of elements to remove from each side.
+    We use a loop to remove n smallest and n largest elements from the list and return the mean.
+    Finally we compare the trimmed mean to the arithmetic mean."""
 
 #task 9:
 #drawing plots to show the relationship between price and room_type, price and host status and price and review_score_rating
