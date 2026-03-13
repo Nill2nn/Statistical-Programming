@@ -125,11 +125,10 @@ print(neighborhood_summary.head(3))
  3. Schmargendorf  with a median price of 172 and average rating of 4.66 """
 
 
-print('room type:',listings_berlin['room_type'].unique())
 #task 9:
-#drawing plots to show the relationship between price and review scores rating, and price and the neighbourhood_cleansed
+#drawing plots to show the relationship between price and room_type, price and host status and price and review_score_rating
 plt.figure(figsize=(12, 6))
-# Price vs Review Scores Rating
+# Price vs room_type
 plt.subplot(1, 2, 1)
 # gathering and collecting the prices of each type of room together to plot them in the same graph
 for room in listings_berlin['room_type'].unique():
@@ -142,4 +141,46 @@ plt.ylabel('Density', fontsize=12)
 plt.xlim(0, 500)
 plt.legend(title='Room Type')
 plt.grid(axis='y', alpha=0.3)
+
+#  to compare the price distribution between superhosts and regular hosts
+plt.subplot(1, 2, 2)
+
+for superhost in listings_berlin['host_is_superhost'].unique():
+    subset = listings_berlin[listings_berlin['host_is_superhost'] == superhost]
+    label = 'Superhost' if superhost == True else 'Regular Host'
+    sns.kdeplot(subset['price'], label=label, fill=False, alpha=0.4)
+
+plt.title('Price Distribution by Superhost Status', fontsize=14, fontweight='bold')
+plt.xlabel('Price (€)', fontsize=12)
+plt.ylabel('Density', fontsize=12)
+plt.xlim(0, 500)
+plt.legend(title='Host Type')
+plt.grid(axis='y', alpha=0.3)
+
+plt.tight_layout()
 plt.show()
+
+# Price vs review_score_rating
+plt.figure(figsize=(10, 6))
+# Remove missing values
+data_clean = listings_berlin.dropna(subset=['review_scores_rating', 'price'])
+# Remove extreme price outliers
+data_clean = data_clean[data_clean['price'] < 500]
+# Remove zeros in review scores
+data_clean = data_clean[data_clean['review_scores_rating'] > 0]
+sns.regplot(data=data_clean, x='review_scores_rating', y='price',
+            scatter_kws={'alpha': 0.3, 'color': 'steelblue'},  # change to steelblue
+            line_kws={'color': 'red', 'linewidth': 2})
+plt.xlabel('Review Score Rating', fontsize=12)
+plt.ylabel('Price (€)', fontsize=12)
+plt.ylim(0, 300)
+plt.title('Price vs Review Score Rating', fontsize=14, fontweight='bold')
+plt.grid(alpha=0.3)
+plt.show()
+
+#task 10:
+""" 1. The price distribution for different room types shows that private rooms have the most density  at a price-range of around 50-100 euros,
+while entire homes/apartments have a wider price distribution with a peak around 100-150 euros. Shared rooms are less common and have a lower price range, mostly below 50 euros.
+    2. the price distribution for superhosts shows that superhosts have the most density at a price range of around 100-150 euros, while regular hosts have a wider price distribution.
+This suggests that superhosts tend to charge higher prices compared to regular hosts.
+    3."""
