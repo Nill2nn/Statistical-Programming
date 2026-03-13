@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 #task 1:
 # Load the dataset
 # I just uploaded the csv file to the GitHub repository and read it from there, so you too can access it without any issues.
