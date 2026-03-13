@@ -183,4 +183,5 @@ plt.show()
 while entire homes/apartments have a wider price distribution with a peak around 100-150 euros. Shared rooms are less common and have a lower price range, mostly below 50 euros.
     2. the price distribution for superhosts shows that superhosts have the most density at a price range of around 100-150 euros, while regular hosts have a wider price distribution.
 This suggests that superhosts tend to charge higher prices compared to regular hosts.
-    3."""
+    3. Listings with higher review scores tend to charge slightly higher prices, but the relationship is very weak.
+    Most listings are highly rated between 4 and 5. 3."""
