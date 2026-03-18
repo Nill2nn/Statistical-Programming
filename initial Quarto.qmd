@@ -379,6 +379,194 @@ When comparing this to the price map from above, the patterns do not fully match
 
 ## Section 2
 
+### Introduction
+Section two looks at what drives Airbnb listing prices in Berlin using regression analysis. Using the cleaned data from Section 1, we estimate and compare OLS, Ridge, and LASSO models to see how property, host, and location features affect nightly prices. The target variable is the log of price, so coefficients show approximate percentage changes. We also check model fit, run diagnostics, and compare prediction accuracy. The goal is to identify the main factors behind pricing and give practical insights for hosts.
+
+### cleaning and preparing the data for regression analysis
+
+At first we load and clean the data as we did in section one, we personally preferd to writte the codes for each secion in different Notebooks to avoid any changes to the original data and to make it more clear and organized. after cleaning the price column and making sure there is no None value and 0 in our list, we created a new column called log_price by applying the natural logarithm to the price column. 
+Then We picked seven numeric variables as predictors, like the number of bedrooms, review scores, and availability. For the categorical variables, instant_bookable and room_type, we used one-hot encoding to turn them into dummy variables, leaving out the first category to avoid multicollinearity. Finally, all the columns were converted to float numbers so they could be used in the regression. 
+After preprocessing, we checked the sample size and data types, made sure instant_bookable was correctly encoded as 0 and 1, and confirmed that all columns were numeric. This ensured the dataset was ready to be used for regression.
+
+### Estimating the Effect of Listing Characteristics on Airbnb Prices
+the next step is to identify which listing characteristics significantly influence Airbnb prices in Berlin but When selecting variables for the regression model, **we encountered many missing values in the review-related variables**. We had two options: either **exclude these variables** or **remove all observations with missing values**. Since the number of missing values was relatively high, we were concerned that dropping them could affect the results. Therefore, we estimated two models. 
+
+#### 1. including review variables
+```{python}
+#| echo: false
+from IPython.display import HTML
+with open("ols_summary.html", "r") as f:
+    display(HTML(f.read()))
+```
+
+
+#### 2. excluding review variables
+
+```{python}
+from IPython.display import HTML
+with open("ols_summary2.html", "r") as f:
+    display(HTML(f.read()))
+ 
+```
+
+and compared their performance using $R^2$, The model including reviews showed a higher $R^2$, indicating a better fit. As a result, we chose to include the review variables and removed o
+bservations with missing values, even though this reduced the sample size by about one-third.
+
+#### Results Interpretation
+The results show that hotel rooms, instant-bookable listings, and the number of bedrooms have the strongest positive effects on Airbnb prices in Berlin. For example, hotel room listings are priced about 0.53 log units higher than entire homes or apartments on average. Instant-bookable listings are around 23.4% more expensive, holding other factors constant. In addition, each extra bedroom increases the price by about 12.6%.
+
+On the other hand, shared rooms have a strongly negative effect on price, meaning they are much cheaper due to lower privacy.
+The $R^2$ value indicates that the model explains about 44.7% of the variation in Airbnb prices. This suggests that while the included variables are important, there are still other factors not captured by the model that influence pricing, such as location, amenities, or seasonal demand.
+
+### Evaluating Predictive Performance through Model Diagnostics
+
+To evaluate the performance of the OLS model, we created two diagnostic plots. The first plot shows residuals against fitted values to check if the main assumptions of linear regression are met. The second plot compares the actual log prices with the predicted values to see how well the model performs overall.
+
+#### Residuals vs Fitted Values
+
+In the residuals vs fitted values plot, we look for patterns in the residuals. Ideally, the residuals should be randomly scattered around zero without any clear pattern.  but as you can see below in the plot, the residual plot shows a funnel shape, with more spread in the middle and less at higher fitted values, indicating heteroscedasticity (non-constant variance). This supports the use of HC3 robust standard errors to handle this issue. There are also a few outliers with large positive residuals, meaning some listings are priced much higher than the model predicts and may affect the results.
+ ```{python}
+#| echo: false
+#| label: fig-residuals
+#| fig-cap: "Residuals vs Fitted Values"
+#| echo: false
+from IPython.display import Image
+Image("residuals_plot.png")
+```
+
+#### True vs Fitted Values
+In the true vs fitted values plot, we want to see points clustered around the 45-degree line, which would indicate good predictions and we can see that in the plot below. the red line shows perfect prediction. Most points are close to the line in the lower price range (3–6), meaning the model works well for typical listings. However, for higher prices, the points move away from the line, showing that the model underpredicts expensive listings. This suggests it struggles to capture premium properties.
+
+  ```{python}
+#| echo: false
+#| label: fig-true-vs-fitted
+#| fig-cap: "True vs Fitted Values"
+#| echo: false
+from IPython.display import Image
+Image("fitted_plot.png")
+```
+
+In short, the main issue is heteroscedasticity. This is why using cov_type='HC3' was a good choice, as it adjusts for this problem and keeps the standard errors and p-values reliable. The model performs reasonably well for average listings but has trouble with outliers and high-priced properties, which is common in real estate data. 
+
+### Ridge Regression Estimation
+To reduce potential instability in the OLS estimates, Ridge regression formula: 
+
+$\hat{\beta}_{Ridge} = (X^\top X + \lambda I)^{-1} X^\top y$
+
+ was applied using its closed-form formula. The function ridge_estimate(X, y, lam) was implemented in NumPy to calculate the coefficients directly.
+
+Here, $\lambda$ is the regularization parameter and $I$ is the identity matrix. A custom function ridge_estimate(X, y, lam) was implemented in NumPy to compute the Ridge coefficients directly based on this formula.
+The model was estimated for three values of $\lambda \in {0.01, 1, 100}$. For each case, the $\ell_2$-norm of the coefficient vector was calculated as:
+
+$\|\hat{\beta}\|_2 = \sqrt{\sum_{j=1}^{p} \hat{\beta}_j^2}$
+
+ this norm measures the overall magnitude of the coefficients. As $\lambda$ increases, the Ridge penalty shrinks the coefficients towards zero, which reduces their $\ell_2$-norm. here are the results for the coefficients and their $\ell_2$-norms for each $\lambda$ value:
+```{python}
+
+#| echo: false
+
+import pandas as pd
+pd.read_csv("ridge_results.csv").style.hide()
+```
+
+ The results above shows that as $\lambda$ increased, the coefficients became smaller and more stable, demonstrating the regularization effect of Ridge regression in controlling for multicollinearity and improving model generalization.
+
+ ### LassoCV Regression — Selecting the Best Alpha and Features
+
+In this task we applied LassoCV regression to automatically find the best regularization parameter (alpha) and eliminate irrelevant features. We set up the model with 10-fold cross-validation and fitted it on our feature matrix X and target variable Y. LassoCV tests multiple alpha values and selects the one with the lowest average error across all folds, saving us from manually tuning the model.
+After fitting, we plotted the Mean Square Error across different alpha values to visualize how the model performs. as you see below in these plot the best alpha is marked by a vertical dashed line on the plot 
+
+```{=html}
+<iframe src="alpha.html" width="100%" height="500px" frameborder="0"></iframe>
+```
+The plot shows how the MSE decreases as alpha increases across all 10 folds. The MSE starts high at around 22-23 on the left and gradually drops to its lowest point at the dashed vertical line, which marks the best alpha selected by LassoCV. This confirms that the model successfully found the optimal alpha where the prediction error is minimized.
+
+Finally, we printed all features whose coefficients were reduced to exactly zero by the model, meaning Lasso decided they had no useful contribution and removed them completely from the model. The features that were eliminated are:
+```{python}
+#| echo: false
+import pandas as pd
+df = pd.read_csv("lasso_zero_features.csv").style.hide()
+print("Selected alpha: 0.9659542672092013")
+df
+```
+
+### Out-of-Sample Model Comparison (OLS vs Ridge vs Lasso
+
+In this task we compared three regression models by evaluating their performance on unseen data. We started by splitting the dataset into 80% training and 20% test sets using the train_test_split function with a fixed random state of 77 to ensure the results are reproducible.
+
+We then fitted all three models on the training data and evaluated them on the test set by calculating the RMSE (Root Mean Square Error) for each one. RMSE measures how far the predictions are from the actual values on average, where a lower RMSE indicates a better performing model.
+
+For the OLS model, we added a constant to both the training and test sets and fitted the model using HC3 robust standard errors to account for heteroscedasticity. For Ridge and Lasso, we used 10-fold cross-validation to automatically find the best alpha, the same approach we applied in the previous task. All three models were then used to predict the target variable on the test set and their RMSE values were printed for comparison.
+
+#### interpreting the results of the out-of-sample model comparison
+
+Looking at the results, OLS and Ridge performed almost identically with an RMSE of around 0.45, meaning both models predict the target variable with similar accuracy. Ridge performed slightly better, but the difference was very small. Lasso on the other hand had a noticeably higher RMSE of around 0.69, which is likely because it eliminated some features completely, reducing the model's ability to capture all relevant information in the data.
+Overall, Ridge performed best out of the three models, OLS came in as a close second, while Lasso performed worst in terms of out-of-sample prediction accuracy, likely due to its aggressive feature selection.
+
+### LAD Regression (Least Absolute Deviations)
+
+  after Sample comparison, we re-estimated the model using LAD regression (Least Absolute Deviations), which minimizes absolute errors instead of squared errors. This makes it more robust to outliers, as large deviations have less influence on the results.
+
+LAD regression can be implemented using Quantile Regression with the quantile set to $q = 0.5$, which corresponds to the median. We used the QuantReg function with the target variable $Y$ and the feature matrix $X_c$, where $X_c$ includes a constant term. By estimating the model at $q = 0.5$, we examine how the predictors affect the median of $Y$, rather than the mean as in OLS.
+
+The model output provides coefficient estimates that can be compared with the OLS results. Overall, LAD produces more stable and reliable estimates in the presence of outliers, which are common in price data. you can see the results of the LAD regression below:
+
+```{python}
+#| echo: false
+import pandas as pd
+df = pd.read_csv("lad_results.csv").style.hide()
+df
+
+```
+
+#### interpreting the results of the LAD regression
+Comparing the LAD and OLS results, both models produce very similar coefficients, suggesting that the relationships between the features and the target variable are quite robust. The biggest differences appear for variables like review scores, hotel room type, and instant booking, which indicates that these may be slightly affected by outliers.
+
+However, the signs of all coefficients remain the same and all variables stay statistically significant, meaning the overall conclusions do not change. This suggests that the OLS results are reliable and not strongly driven by extreme observations.
+
+###
+For this task, we focused on the coefficient of the variable instant_bookable from the model in Task 2, as it is interesting to examine whether instant booking has a significant effect on Airbnb prices in Berlin.
+
+a. Hypotheses
+The null and alternative hypotheses are defined as:
+
+$H_0: \beta_{instant\_bookable} = 0$
+$H_1: \beta_{instant\_bookable} \neq 0$
+
+b. HC3-Robust Test Statistic and P-value
+Using HC3-robust standard errors, the test statistic is $z = 16.605$ with a p-value of $p = 0.000$. Since the p-value is far below common significance levels, we reject the null hypothesis and conclude that instant booking has a statistically significant effect on price.
+
+c. 95% Confidence Interval
+The 95% confidence interval based on HC3 standard errors is:
+
+$[0.207,\ 0.262]$
+
+Since zero is not included in this interval, this further supports rejecting the null hypothesis and confirms that the effect is statistically significant.
+
+d. Real-World Interpretation
+
+The estimated coefficient is:
+
+$\hat{\beta}_{instant\_bookable} = 0.2344$
+
+Because the dependent variable is $\log(price)$, we convert the coefficient as follows:
+
+$\exp(\hat{\beta}) - 1 = \exp(0.2344) - 1 \approx 0.264$
+
+This means that instant bookable listings are associated with prices that are about 26.4% higher compared to non-instant bookable listings, holding all other factors constant. In the Berlin Airbnb market, this suggests that the convenience of instant booking allows hosts to charge a noticeable price premium.
+
+### conclusion about Heteroscedasticity, Causality, and Omitted Variable Bias
+
+to wrap things up, we need to explain some points about heteroscedasticity, causality, and omitted variable bias in the context of our regression analysis.
+
+#### Heteroscedasticity
+Heteroscedasticity-robust standard errors (HC3) are important because the variance of the errors is unlikely to be constant across all listings. For example, more expensive or luxury properties often show greater price variation than cheaper ones. If heteroscedasticity is ignored, the standard errors, test statistics, and p-values may become unreliable. Using HC3 helps correct for this issue and ensures that our inference remains valid.
+
+#### Causality and Omitted Variable Bias
+
+When it comes to causality, the coefficient for instant_bookable should not be interpreted as a causal effect, but only as an association. There are likely omitted variables—such as listing quality, host experience, neighborhood attractiveness, and available amenities—that influence both the decision to enable instant booking and the listing price. This creates bias in the estimate and means we cannot draw causal conclusions from the model.
+
+
 
 \clearpage
 
