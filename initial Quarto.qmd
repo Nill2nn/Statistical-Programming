@@ -48,7 +48,7 @@ url_listing_berlin = "https://raw.githubusercontent.com/Nill2nn/Statistical-Prog
 listings_berlin = pd.read_csv(url_listing_berlin)
 ```
 
-#### Data Loading and Detecting Missing Values
+### Data Loading and Detecting Missing Values
 To start with, the data needed to be loaded into the environment. This involves reading the data from a source, such as a CSV file. We first loaded our CSV file into our public GitHub repository and used the relative URL so everyone could access it. Then, with the .shape method, we checked the dimensions of the data. We explicitly used the following two lines of code:
 ```{python}
 #| eval: false
@@ -59,7 +59,7 @@ pd.set_option('display.width', None)
 To make sure that all columns are visible when printing the data.
 The second step is detecting missing values. We used the .isnull() method to identify any missing values in the dataset. This method returns a boolean DataFrame indicating the presence of missing values. Afterward, we collected the missing values and converted them into percentages, presenting them in a table to gain a better understanding of them.
 
-#### Identifying the highest rate of missing values
+### Identifying the highest rate of missing values
 
 Based on the table created, the columns with the highest rate of missing values were 'price', 'host_response_rate', 'review_scores_rating', and 'review_scores_cleanliness'.
 we will recommend to keep the colums as such: 
@@ -70,7 +70,7 @@ The 'host_response_rate' column should be removed because it contained a high pe
 The missing values in 'review_scores_rating' and 'review_scores_cleanliness' should be kept, as these variables can still provide useful information for customers. Imputing these values should be avoided because the missing values appear random, and replacing them with the mean or median could introduce misleading information
 """
 
-#### cleaning the data
+### cleaning the data
 After identifying the missing values, we proceeded to clean the data. This involved handling the missing values in the dataset. For the 'price' column, we wrote a function to thoroughly clean the string values and convert them into numeric values.
 ```{python}
 #| eval: false
@@ -111,12 +111,12 @@ price_desc['Value'] = price_desc['Value'].round(2)
 display(Markdown(tabulate(price_desc, headers='keys', tablefmt='pipe', showindex=False)))
 ```
 
-#### cleaning  bathroom column
+### cleaning  bathroom column
 The 'bathrooms' column contained a mix of string values with different formats, such as "1 bath", "2 baths", and "half bath". To clean this column, we wrote a function that identify missing values and extracts the numeric values from the strings and converts them into a consistent format. The function also handles cases where the value is "Shared bath" by assigning a specific numeric value (e.g., 0.5) to represent shared bathrooms. in this Function, we preffered ro use .split method to extract the numeric part of the string, which is more efficient and easy to underestand than using regular expressions.  this is the result of our cleaning process for the 'bathrooms' column:
 
 the Types of rooms available: [ 1. , 2.5 , 2. , 1.5  0. , nan , 3. , 0.5 , 4.5 , 8. ,  3.5 , 5.  , 8.5  4. , 6. , 15. ]
 
-#### converting string values to boolean values
+### converting string values to boolean values
 The 'host_is_superhost' and 'instant_bookable' column contained string values of "t" and "f", which represent true and false, respectively. To convert these string values into boolean values, we wrote codes that checks the value of each entry in the 'host_is_superhost' column and returns True for "t" and False for "f". This conversion allows us to work with boolean values in our analysis, making it easier to perform logical operations and comparisons based on whether a host is a superhost or not.
 then for turning the column 'host_tenure_years' into 'host_since', first we made a copy of our database to avoid any changes to the original data. Then, we created a new column 'host_since' by subtracting the 'host_tenure_years' from the current year (2025). you can see the codes and results below:
 ```{python}
@@ -125,7 +125,7 @@ lb['host_tenure_years'] = 2025 - pd.to_datetime(lb['host_since']).dt.year
 print(lb['host_tenure_years'].head(5))
 ```
 
-#### comparing the raw data with log transformed data by visualizing the distribution of the 'price' column
+### comparing the raw data with log transformed data by visualizing the distribution of the 'price' column
 in this task our Goal was to compare the raw data with log-transformed data to understand the distribution of the 'price' column. here you can see the plots: 
 ```{python}
 
@@ -154,13 +154,14 @@ plt.show()
 
 as you can see from the plots, the raw price distribution is right-skewed, with a long tail towards higher prices. This indicates that there are a few listings with very high prices compared to the majority of listings. On the other hand, the log-transformed price distribution appears more symmetric and closer to a normal distribution. This transformation helps to reduce the skewness and makes it easier to analyze and interpret the data, especially when dealing with outliers or extreme values in the 'price' column.
 
-#### Sorting the column neighborhood_cleansed by their median price
+### Sorting the column neighborhood_cleansed by their median price
+
 To sort the 'neighborhood_cleansed' column by their median price, we first calculated the number of listing, the median price and review_scores_rating for each neighborhood using the .groupby() method in Pandas. Then, we sorted the neighborhoods based on their median prices in descending order. with this method we find out The top three neighborhoods with the highest median price are:
  1. Haselhorst with a median price of 236.5 and average rating of 4.86
  2. West 5 with a median price of 203 and average rating of 4.79
  3. Schmargendorf  with a median price of 172 and average rating of 4.66
 
- #### Calculating a trimmed mean
+ ### Calculating a trimmed mean
 
 To calculate a more reliable average price, we defined a custom trimmed_mean function that removes the top and bottom 5% of the price data before calculating the mean. 
 ```{python}
@@ -210,7 +211,7 @@ display(Markdown(tabulate(results, headers='keys', tablefmt='pipe',showindex=Fal
 Since the trimmed mean is lower than the arithmetic mean, this indicates that high-priced outliers are pulling the regular average upward. This means the trimmed mean gives a more realistic picture of what a typical Berlin Airbnb listing actually costs, as it is not influenced by a small number of extremely expensive listings in the dataset.
 
 
-#### diagrams to explore the relationship between price and other variables
+### diagrams to explore the relationship between price and other variables
  we actually created several diagrams to explore the relationship between price and other variables, such as 'room_type', 'host_is_superhost', and 'review_scores_rating'. you can see the first to diagrams below:
  ```{python}
 #| echo: false
@@ -250,12 +251,12 @@ plt.show()
 
  ```
 
-##### interpreting the rooms type diagram
+#### interpreting the rooms type diagram
 As shown in the first plot, the price distribution varies by room type. Entire homes or apartments tend to have higher prices compared to private rooms and shared rooms, which is expected since they offer more privacy and amenities. However, this diagram does not accurately represent the real distribution of hotel room prices.
 
 When the number of hotel rooms and their distribution were examined more closely, it was found that the number of hotel rooms is very similar to the number of shared rooms (110 and 120, respectively). However, the standard deviation of hotel room prices is much higher than that of shared rooms (14,667 and 232, respectively). This indicates that the price distribution for hotel rooms is much more spread out and shows greater variability compared to shared rooms. As a result, the diagram displays the hotel room distribution as a line with very low density.
 
-##### interpreting the superhost status diagram
+#### interpreting the superhost status diagram
 The price distribution for both host types peaks around €50-100. However, regular hosts show a higher density at lower prices, meaning their listings are more concentrated in the budget range. Superhosts show a flatter and wider distribution, suggesting they offer listings across a broader range of price points. This may indicate that superhost status is not strictly associated with higher pricing, but rather with more diverse listing types.
 
 and here comes the third diagram that was created in the shape of a scatter plot to explore the relationship between price and review_scores_rating:
@@ -281,11 +282,11 @@ plt.show()
 
 
 ```
-##### interpreting the price vs review score rating diagram
+#### interpreting the price vs review score rating diagram
 The scatter plot shows the relationship between review score rating and price. The regression line indicates a slight positive trend — listings with higher ratings tend to charge marginally higher prices. However, the relationship is very weak, suggesting that review scores alone do not determine pricing. The majority of listings are clustered between ratings 4.0 and 5.0, with prices varying widely in that range. This indicates that other factors such as location, room type, or number of amenities likely play a much stronger role in determining the price of a listing than the review score alone.
 
 
-##### loading GeoJSON file and preparing it for visualization
+### loading GeoJSON file and preparing it for visualization
 To create the map visualization, we first needed to match the neighbourhood names in the Airbnb dataset with the official Berlin neighbourhood boundaries from a GeoJSON file. This required several steps because the neighbourhood names were not written the same way in both datasets.
 
 First, the GeoJSON file was loaded and all official Berlin neighbourhood names were extracted into a list. Then we compared these names with the neighbourhood names in the Airbnb dataset. The initial comparison showed that many names did not match directly because of differences in spelling, special German characters such as ß and ü, extra spaces, and other formatting inconsistencies.
@@ -297,7 +298,7 @@ there was actually some method to automatically match the names using fuzzy stri
 :::
 Finally, the Airbnb listings were merged with the GeoJSON neighbourhood data using the normalized neighbourhood names as the common key. This produced a combined dataset in which each Airbnb listing is linked to its official Berlin neighbourhood boundary, making the data ready for accurate map visualization.
 
-##### visualizing Airbnb prices across Berlin using a choropleth map
+### visualizing Airbnb prices across Berlin using a choropleth map
 
 To visualize Airbnb prices across Berlin, we created an interactive choropleth map showing the median nightly price for each neighbourhood. First, we grouped the merged dataset by neighbourhood and calculated the total number of listings and the median price for each area. Since the normalization process had replaced the original names, we merged them back into the dataframe so they could be displayed correctly on the map.
 
@@ -310,7 +311,7 @@ from IPython.display import IFrame
 IFrame("berlin_map.html", width="100%", height="500")
 ```
 
-##### Visualizing Individual Airbnb Listings Relative to District Median Prices
+### Visualizing Individual Airbnb Listings Relative to District Median Prices
 
 To make the above choropleth map  more informative, we added another layer that shows each Airbnb listing as a point on the map. Each point is colored depending on whether the listing’s price is above or below the median price of its neighbourhood.
 
@@ -325,7 +326,7 @@ from IPython.display import IFrame
 IFrame("berlin_map_task13.html", width="100%", height="500")
 ```
 
-#####
+### Visualizing Airbnb Listing Density Across Berlin
 To complement the first Berlin price map , we created a second choropleth map that shows the listing density, meaning the number of Airbnb listings per km², for each Bezirksregion.
 
 To calculate this, we took the area in m² (GROESSE_m2) from the GeoJSON file for each district and stored it in a separate dataframe called areas_df. This was then merged with the existing group_by_bzr dataframe. Finally, the density was calculated by dividing the number of listings by the area converted from m² to km². you can see the core codes for this map below:
@@ -344,7 +345,7 @@ from IPython.display import IFrame
 IFrame("berlin_map_task14.html", width="100%", height="500")
 ```
 
-##### interpreting the listing density map and comparing it to the price map
+### interpreting the listing density map and comparing it to the price map
 first to gain more clearity we attached Two tables with the top 10 districts with the highest median price and the top 10 districts with the highest listing density:
 ```{python}
 #| echo: false
